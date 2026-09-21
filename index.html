@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#f7dce5">
+    <title>ポッピークッキー</title>
+    <link rel="stylesheet" href="TemplateData/style.css">
+  </head>
+  <body>
+    <main id="unity-safe-area" aria-label="ポッピークッキー">
+      <div id="unity-container">
+        <canvas id="unity-canvas" width=1280 height=720 tabindex="0"></canvas>
+        <section id="unity-loading" role="status" aria-live="polite">
+          <div class="loading-card">
+            <div class="cookie-mark" aria-hidden="true">P</div>
+            <div class="loading-title">ポッピークッキー</div>
+            <div class="progress-track" aria-hidden="true">
+              <div id="unity-progress"></div>
+            </div>
+            <div id="unity-loading-label">読み込み中 0%</div>
+          </div>
+        </section>
+        <section id="unity-error" role="alert" aria-live="assertive">
+          <div class="error-card">
+            <strong id="error-heading">ゲームを開始できませんでした</strong>
+            <p id="unity-error-message"></p>
+            <button type="button" id="unity-reload">再読み込み</button>
+          </div>
+        </section>
+        <div id="unity-warning" aria-live="polite"></div>
+      </div>
+    </main>
+    <aside id="rotate-prompt" role="status">
+      <div class="rotate-card">
+        <strong id="rotate-heading">スマートフォンを縦向きにしてください</strong>
+      </div>
+    </aside>
+    <script>
+      "use strict";
+
+      const canvas = document.querySelector("#unity-canvas");
+      const loading = document.querySelector("#unity-loading");
+      const progress = document.querySelector("#unity-progress");
+      const loadingLabel = document.querySelector("#unity-loading-label");
+      const errorPanel = document.querySelector("#unity-error");
+      const errorMessage = document.querySelector("#unity-error-message");
+      const warningPanel = document.querySelector("#unity-warning");
+      const browserLanguage = (navigator.languages && navigator.languages[0]) || navigator.language || "en";
+      const defaultLanguage = /^ja(?:[-_]|$)/i.test(String(browserLanguage).trim()) ? "ja" : "en";
+      let pageLanguage = defaultLanguage;
+      window.setCookieLanguage = (code) => {
+        pageLanguage = code === "en" ? "en" : "ja";
+        document.documentElement.lang = pageLanguage;
+        const title = pageLanguage === "en" ? "Poppy Cookie" : "ポッピークッキー";
+        document.title = title;
+        canvas.setAttribute("aria-label", title);
+        document.querySelector("#unity-safe-area").setAttribute("aria-label", title);
+        document.querySelector(".loading-title").textContent = title;
+        try { localStorage.setItem("CookieFlipull.Language", pageLanguage); } catch (_) {}
+        document.querySelector("#error-heading").textContent = pageLanguage === "en"
+          ? "The game could not start" : "ゲームを開始できませんでした";
+        document.querySelector("#unity-reload").textContent = pageLanguage === "en" ? "Reload" : "再読み込み";
+        document.querySelector("#rotate-heading").textContent = pageLanguage === "en"
+          ? "Please rotate your phone to portrait" : "スマートフォンを縦向きにしてください";
+        loadingLabel.textContent = pageLanguage === "en" ? "Loading 0%" : "読み込み中 0%";
+      };
+      try {
+        const savedLanguage = localStorage.getItem("CookieFlipull.Language");
+        window.setCookieLanguage(savedLanguage === "ja" || savedLanguage === "en" ? savedLanguage : defaultLanguage);
+      } catch (_) { window.setCookieLanguage(defaultLanguage); }
+
+      function showFatal(message) {
+        loading.hidden = true;
+        errorMessage.textContent = String(message || "UNKNOWN ERROR");
+        errorPanel.classList.add("visible");
+      }
+
+      function unityShowBanner(message, type) {
+        if (type === "error") {
+          showFatal(message);
+          return;
+        }
+
+        const banner = document.createElement("div");
+        banner.className = type === "warning" ? "warning-message" : "info-message";
+        banner.textContent = String(message);
+        warningPanel.appendChild(banner);
+        window.setTimeout(() => banner.remove(), 5000);
+      }
+
+      document.querySelector("#unity-reload").addEventListener("click", () => location.reload());
+      document.addEventListener("pointerdown", () => canvas.focus(), { passive: true });
+      document.addEventListener("keydown", (event) => {
+        if (["ArrowUp", "ArrowDown", "Space"].includes(event.code) && document.activeElement === canvas) {
+          event.preventDefault();
+        }
+      });
+
+      const buildUrl = "Build";
+      const loaderUrl = buildUrl + "/WebGL.loader.js";
+      const config = {
+        arguments: [],
+        dataUrl: buildUrl + "/WebGL.data.unityweb",
+        frameworkUrl: buildUrl + "/WebGL.framework.js.unityweb",
+        codeUrl: buildUrl + "/WebGL.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        autoSyncPersistentDataPath: true,
+        companyName: "Cookie Atelier",
+        productName: "Cookie Flipull",
+        productVersion: "1.0",
+        showBanner: unityShowBanner,
+        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
+      };
+
+
+      const loader = document.createElement("script");
+      loader.src = loaderUrl;
+      loader.onload = () => {
+        createUnityInstance(canvas, config, (value) => {
+          const percent = Math.round(value * 100);
+          progress.style.width = percent + "%";
+          loadingLabel.textContent = (pageLanguage === "en" ? "Loading " : "読み込み中 ") + percent + "%";
+        }).then((unityInstance) => {
+          loading.hidden = true;
+          canvas.focus();
+        }).catch(showFatal);
+      };
+      loader.onerror = () => showFatal(pageLanguage === "en"
+        ? "The game loader could not be downloaded." : "ゲームの読み込みに失敗しました。");
+      document.body.appendChild(loader);
+    </script>
+  </body>
+</html>

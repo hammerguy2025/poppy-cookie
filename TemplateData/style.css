@@ -1,0 +1,258 @@
+:root {
+  color-scheme: light;
+  font-family: "Trebuchet MS", "Arial Rounded MT Bold", Arial, sans-serif;
+  background: #fcf1ed;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --berry: #684653;
+  --pink: #f6a9c1;
+  --cream: #fffbf3;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #fcf1ed;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100dvh;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#unity-safe-area {
+  position: fixed;
+  top: var(--safe-top);
+  right: var(--safe-right);
+  bottom: var(--safe-bottom);
+  left: var(--safe-left);
+  display: grid;
+  place-items: center;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+#unity-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+#unity-container {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+  background: #fcf1ed;
+}
+
+/*
+ * The product is portrait-first even when it is opened from a desktop browser.
+ * Keep Unity's actual render surface at the 1:2 phone composition and use the
+ * remaining browser width as a calm safety margin. This also makes Unity select
+ * the same HUD hierarchy that players see on a phone.
+ */
+@media (min-aspect-ratio: 1 / 2) {
+  #unity-container {
+    width: auto;
+    height: 100%;
+    aspect-ratio: 1 / 2;
+  }
+}
+
+@media (max-aspect-ratio: 1 / 2) {
+  #unity-container {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 2;
+  }
+}
+
+#unity-canvas {
+  display: block;
+  border: 0;
+  outline: none;
+  background: #1F1F20;
+}
+
+#unity-loading,
+#unity-error {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(247, 220, 229, 0.9);
+}
+
+#unity-loading[hidden] {
+  display: none;
+}
+
+.loading-card,
+.error-card,
+.rotate-card {
+  width: min(360px, 90vw);
+  padding: 28px;
+  border: 1px solid #cda3ac;
+  border-radius: 20px;
+  color: var(--berry);
+  background: var(--cream);
+  box-shadow: 0 4px 0 rgba(104, 70, 83, 0.08);
+  text-align: center;
+}
+
+.cookie-mark {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 12px;
+  border: 2px solid var(--berry);
+  border-radius: 50%;
+  color: transparent;
+  background: #f6a9c1;
+}
+
+.loading-title {
+  margin-bottom: 18px;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.progress-track {
+  height: 18px;
+  overflow: hidden;
+  border: 1px solid #cda3ac;
+  border-radius: 999px;
+  background: #ffe4ec;
+}
+
+#unity-progress {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--pink);
+  transition: width 100ms linear;
+}
+
+#unity-loading-label {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+#unity-error {
+  display: none;
+  z-index: 20;
+}
+
+#unity-error.visible {
+  display: grid;
+}
+
+.error-card p {
+  margin: 14px 0 18px;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+
+.error-card button {
+  min-width: 150px;
+  min-height: 48px;
+  border: 3px solid var(--berry);
+  border-radius: 999px;
+  color: var(--berry);
+  background: #f7b4c7;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+#unity-warning {
+  position: absolute;
+  z-index: 30;
+  top: 12px;
+  left: 50%;
+  width: min(560px, calc(100% - 32px));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.warning-message,
+.info-message {
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  border: 2px solid var(--berry);
+  border-radius: 12px;
+  color: var(--berry);
+  background: #fff3bf;
+  font-size: 13px;
+  text-align: center;
+}
+
+#diagnostics-icon {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 40;
+}
+
+#rotate-prompt {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: none;
+  place-items: center;
+  padding:
+    calc(20px + env(safe-area-inset-top, 0px))
+    calc(20px + env(safe-area-inset-right, 0px))
+    calc(20px + env(safe-area-inset-bottom, 0px))
+    calc(20px + env(safe-area-inset-left, 0px));
+  color: var(--berry);
+  background: #f7dce5;
+  text-align: center;
+}
+
+.rotate-card {
+  display: grid;
+  gap: 10px;
+}
+
+.rotate-card span:last-child {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.rotate-icon {
+  font-size: 48px;
+  line-height: 1;
+}
+
+@media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 600px) {
+  #rotate-prompt {
+    display: grid;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #unity-progress {
+    transition: none;
+  }
+}
