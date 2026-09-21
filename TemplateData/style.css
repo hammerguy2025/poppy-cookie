@@ -158,39 +158,6 @@ body {
   letter-spacing: 0.08em;
 }
 
-#unity-start {
-  width: min(250px, 100%);
-  min-height: 56px;
-  margin-top: 18px;
-  border: 3px solid var(--berry);
-  border-radius: 999px;
-  color: var(--berry);
-  background: #f7b4c7;
-  box-shadow: 0 4px 0 rgba(104, 70, 83, 0.2);
-  font: inherit;
-  font-size: 16px;
-  font-weight: 900;
-  letter-spacing: 0.05em;
-  cursor: pointer;
-  touch-action: manipulation;
-}
-
-#unity-start:hover,
-#unity-start:focus-visible {
-  background: #ffc3d4;
-  outline: 3px solid #ffffff;
-  outline-offset: 2px;
-}
-
-#unity-start:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 rgba(104, 70, 83, 0.2);
-}
-
-#unity-start[hidden] {
-  display: none;
-}
-
 #unity-error {
   display: none;
   z-index: 20;
