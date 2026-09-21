@@ -19,6 +19,7 @@
               <div id="unity-progress"></div>
             </div>
             <div id="unity-loading-label">読み込み中 0%</div>
+            <button type="button" id="unity-start" hidden>タップしてはじめる</button>
           </div>
         </section>
         <section id="unity-error" role="alert" aria-live="assertive">
@@ -43,6 +44,7 @@
       const loading = document.querySelector("#unity-loading");
       const progress = document.querySelector("#unity-progress");
       const loadingLabel = document.querySelector("#unity-loading-label");
+      const startButton = document.querySelector("#unity-start");
       const errorPanel = document.querySelector("#unity-error");
       const errorMessage = document.querySelector("#unity-error-message");
       const warningPanel = document.querySelector("#unity-warning");
@@ -61,6 +63,7 @@
         document.querySelector("#error-heading").textContent = pageLanguage === "en"
           ? "The game could not start" : "ゲームを開始できませんでした";
         document.querySelector("#unity-reload").textContent = pageLanguage === "en" ? "Reload" : "再読み込み";
+        startButton.textContent = pageLanguage === "en" ? "Tap to start" : "タップしてはじめる";
         document.querySelector("#rotate-heading").textContent = pageLanguage === "en"
           ? "Please rotate your phone to portrait" : "スマートフォンを縦向きにしてください";
         loadingLabel.textContent = pageLanguage === "en" ? "Loading 0%" : "読み込み中 0%";
@@ -122,8 +125,23 @@
           progress.style.width = percent + "%";
           loadingLabel.textContent = (pageLanguage === "en" ? "Loading " : "読み込み中 ") + percent + "%";
         }).then((unityInstance) => {
-          loading.hidden = true;
-          canvas.focus();
+          const silentPreview = new URLSearchParams(location.search).get("audio") === "off";
+          if (silentPreview) {
+            loading.hidden = true;
+            canvas.focus();
+          } else {
+            progress.style.width = "100%";
+            loadingLabel.textContent = pageLanguage === "en" ? "Ready!" : "準備できました！";
+            startButton.hidden = false;
+            startButton.addEventListener("click", () => {
+              startButton.disabled = true;
+              // Unity registers mousedown/touchstart listeners on window. This real player
+              // gesture resumes Web Audio before asking the persistent service to retry BGM.
+              unityInstance.SendMessage("Cookie Flipull Audio", "NotifyUserGesture");
+              loading.hidden = true;
+              canvas.focus();
+            }, { once: true });
+          }
         }).catch(showFatal);
       };
       loader.onerror = () => showFatal(pageLanguage === "en"
